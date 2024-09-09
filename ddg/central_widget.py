@@ -108,6 +108,7 @@ class CentralWidget(QtWidgets.QDialog, CLASS_DIALOG):
         self.lineEditX.textEdited.connect(self.update_coordinates)
         self.lineEditY.textEdited.connect(self.update_coordinates)
         self.canvas.image_loaded.connect(self.display_charts_from_loaded_image)
+        self.canvas.set_chart(self.currentImageChart, self.allImageChart)
 
         # Buttons
         self.pushButtonAddField.clicked.connect(self.add_field_dialog)
@@ -244,16 +245,16 @@ class CentralWidget(QtWidgets.QDialog, CLASS_DIALOG):
         y = self.lineEditY.text()
         self.canvas.save_coordinates(x, y)
 
-    def display_charts_from_loaded_image(self, directory, image):
+    def display_charts_from_loaded_image(self, directory, image_name):
         del directory
-        self.display_charts_for_image(image)
+        self.display_charts_for_image(image_name)
 
     def update_charts_from_point_count(self, image_name, class_name, class_count):
         del class_name, class_count
         self.display_charts_for_image(image_name)
 
-    def display_charts_for_image(self, image):
-        if not image or not self.canvas.classes:
+    def display_charts_for_image(self, image_name):
+        if not image_name or not self.canvas.classes:
             return
         y_current_image = []
         y_all_image = []
@@ -262,8 +263,8 @@ class CentralWidget(QtWidgets.QDialog, CLASS_DIALOG):
             for class_name, class_points in points.items():
                 class_count_all_image[class_name] += len(class_points)
         for class_name in self.canvas.classes:
-            if class_name in self.canvas.points[image]:
-                y_current_image.append(len(self.canvas.points[image][class_name]))
+            if class_name in self.canvas.points[image_name]:
+                y_current_image.append(len(self.canvas.points[image_name][class_name]))
             else:
                 y_current_image.append(0)
             if class_name in class_count_all_image:
@@ -272,13 +273,14 @@ class CentralWidget(QtWidgets.QDialog, CLASS_DIALOG):
                 y_all_image.append(0)
 
         class_names = self.canvas.classes
-        self.display_chart(self.currentImageChart, class_names, y_current_image, self.tr('Current Image'))
+        self.display_chart(self.currentImageChart, class_names, y_current_image, image_name)
         self.display_chart(self.allImageChart, class_names, y_all_image, self.tr('All Images'))
 
     def display_chart(self, chart, class_names, class_counts, title):
         chart.clear()
         chart.setTitle(title)
         chart.setBackground('#232323')  # Dark background.
+        chart.getPlotItem().setMenuEnabled(False)
         positions = [i*0.1+0.1 for i in range(len(class_names))]
         colors = [self.canvas.colors[class_name].getRgb()[0:3] for class_name in class_names]
         bar_graph_item = pg.BarGraphItem(x=positions, height=class_counts, width=0.02, brushes=colors)

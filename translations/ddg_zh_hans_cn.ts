@@ -80,89 +80,89 @@
   <context>
     <name>Canvas</name>
     <message>
-      <location filename="../ddg/canvas.py" line="139" />
+      <location filename="../ddg/canvas.py" line="143" />
       <source>Unsaved Changes</source>
       <translation>未保存的更改</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="140" />
+      <location filename="../ddg/canvas.py" line="144" />
       <source>Point or field data have been modified.</source>
       <translation>点或实地数据已被修改。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="141" />
+      <location filename="../ddg/canvas.py" line="145" />
       <source>Do you want to save your changes?</source>
       <translation>你想保存你的更改吗？</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="210" />
+      <location filename="../ddg/canvas.py" line="214" />
       <source>survey id,image</source>
       <translation>调查编号, 图像</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="242" />
+      <location filename="../ddg/canvas.py" line="246" />
       <source>survey id,image,class,x,y</source>
       <translation>调查编号, 图像, 类别,x,y</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="345" />
-      <location filename="../ddg/canvas.py" line="327" />
+      <location filename="../ddg/canvas.py" line="355" />
+      <location filename="../ddg/canvas.py" line="337" />
       <source>Warning</source>
       <translation>警告</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="327" />
+      <location filename="../ddg/canvas.py" line="337" />
       <source>Working directory already set. Load canceled.</source>
       <translation>工作目录已经设定。 加载被取消。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="337" />
+      <location filename="../ddg/canvas.py" line="347" />
       <source>Mix of files and directories detected. Load canceled.</source>
       <translation>检测到文件和目录的混合。 加载被取消。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="340" />
+      <location filename="../ddg/canvas.py" line="350" />
       <source>Files from multiple directories detected. Load canceled.</source>
       <translation>检测到多个目录的文件。 加载被取消。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="343" />
+      <location filename="../ddg/canvas.py" line="353" />
       <source>Image originated outside current working directory. Load canceled.</source>
       <translation>图像来自于当前工作目录之外。加载被取消。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="417" />
+      <location filename="../ddg/canvas.py" line="427" />
       <source>File Not Found</source>
       <translation>未找到文件</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="417" />
+      <location filename="../ddg/canvas.py" line="427" />
       <source>is not in the same folder as the point file.</source>
       <translation>不在与点文件相同的文件夹中。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="596" />
+      <location filename="../ddg/canvas.py" line="606" />
       <source>Save Points</source>
       <translation>保存点</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="603" />
-      <location filename="../ddg/canvas.py" line="599" />
+      <location filename="../ddg/canvas.py" line="613" />
+      <location filename="../ddg/canvas.py" line="609" />
       <source>ERROR</source>
       <translation>错误</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="599" />
+      <location filename="../ddg/canvas.py" line="609" />
       <source>You are attempting to save the pnt file outside of the working directory. Operation canceled. POINT DATA NOT SAVED.</source>
       <translation>您正试图在工作目录之外保存点文件。 操作被取消。 点数据未保存。</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="604" />
+      <location filename="../ddg/canvas.py" line="614" />
       <source>Save Failed!</source>
       <translation>保存失败!</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="605" />
+      <location filename="../ddg/canvas.py" line="615" />
       <source>It appears you cannot save your pnt file in the working directory, possibly due to permissions.
 
 Either change the permissions on the folder or click the SAVE button and select another location outside of the working directory. Remember to copy of the pnt file back into the current working directory.</source>
@@ -174,52 +174,47 @@ Either change the permissions on the folder or click the SAVE button and select 
   <context>
     <name>CentralWidget</name>
     <message>
-      <location filename="../ddg/central_widget.py" line="129" />
+      <location filename="../ddg/central_widget.py" line="130" />
       <source>Saving...</source>
       <translation>保存...</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="144" />
+      <location filename="../ddg/central_widget.py" line="145" />
       <source>Warning</source>
       <translation>警告</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="144" />
+      <location filename="../ddg/central_widget.py" line="145" />
       <source>Field name already exists</source>
       <translation>字段名已经存在</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="153" />
+      <location filename="../ddg/central_widget.py" line="154" />
       <source>Save</source>
       <translation>保存</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="156" />
+      <location filename="../ddg/central_widget.py" line="157" />
       <source>Add Custom Field</source>
       <translation>添加自定义字段</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="171" />
+      <location filename="../ddg/central_widget.py" line="172" />
       <source>Delete</source>
       <translation>删除</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="174" />
+      <location filename="../ddg/central_widget.py" line="175" />
       <source>Delete Custom Field</source>
       <translation>删除自定义字段</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="238" />
+      <location filename="../ddg/central_widget.py" line="239" />
       <source>Select image folder</source>
       <translation>选择图像文件夹</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="275" />
-      <source>Current Image</source>
-      <translation>当前图像</translation>
-    </message>
-    <message>
-      <location filename="../ddg/central_widget.py" line="276" />
+      <location filename="../ddg/central_widget.py" line="277" />
       <source>All Images</source>
       <translation>所有图像</translation>
     </message>
@@ -471,43 +466,48 @@ Either change the permissions on the folder or click the SAVE button and select 
     <message>
       <location filename="../ddg/point_widget.py" line="210" />
       <source>Export Image With Points</source>
-      <translation>导出带点的图像</translation>
+      <translation>输出带点的图像</translation>
     </message>
     <message>
+      <location filename="../ddg/point_widget.py" line="216" />
+      <source>Export Chart</source>
+      <translation>输出图表</translation>
+    </message>
+    <message>
+      <location filename="../ddg/point_widget.py" line="235" />
       <location filename="../ddg/point_widget.py" line="229" />
-      <location filename="../ddg/point_widget.py" line="223" />
       <source>Select Points File</source>
       <translation>选择点数文件</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="279" />
-      <location filename="../ddg/point_widget.py" line="252" />
+      <location filename="../ddg/point_widget.py" line="285" />
+      <location filename="../ddg/point_widget.py" line="258" />
       <source>Warning</source>
       <translation>警告</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="253" />
+      <location filename="../ddg/point_widget.py" line="259" />
       <source>You are about to clear all data</source>
       <translation>你要清除所有的数据</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="281" />
-      <location filename="../ddg/point_widget.py" line="254" />
+      <location filename="../ddg/point_widget.py" line="287" />
+      <location filename="../ddg/point_widget.py" line="260" />
       <source>Do you want to continue?</source>
       <translation>你想继续吗？</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="267" />
+      <location filename="../ddg/point_widget.py" line="273" />
       <source>Image</source>
       <translation>图像</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="268" />
+      <location filename="../ddg/point_widget.py" line="274" />
       <source>Count</source>
       <translation>计数</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="280" />
+      <location filename="../ddg/point_widget.py" line="286" />
       <source>You are about to remove class</source>
       <translation>您要删除的类别</translation>
     </message>
@@ -661,6 +661,11 @@ Either change the permissions on the folder or click the SAVE button and select 
       <location filename="../ddg/point_widget.ui" line="0" />
       <source>Overlay</source>
       <translation>覆盖</translation>
+    </message>
+    <message>
+      <location filename="../ddg/point_widget.ui" line="0" />
+      <source>Chart</source>
+      <translation>图表</translation>
     </message>
     <message>
       <location filename="../ddg/point_widget.ui" line="0" />

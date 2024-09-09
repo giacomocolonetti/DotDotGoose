@@ -210,6 +210,12 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
             file_name = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Export Image With Points'), os.path.join(self.canvas.directory, 'overlay.png'), 'PNG (*.png);;JPG (*.jpg)')
             if file_name[0] != '':
                 self.canvas.export_overlay(file_name[0])
+        elif self.radioButtonChart.isChecked():
+            if self.canvas.current_image_name is not None:
+                chart_png = os.path.splitext(self.canvas.current_image_name)[0] + '_chart.png'
+                file_name = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Export Chart'), os.path.join(self.canvas.directory, chart_png), 'PNG (*.png);;JPG (*.jpg)')
+                if file_name[0] != '':
+                    self.canvas.export_chart(file_name[0])
         else:
             self.chip_dialog = ChipDialog(self.canvas.classes, self.canvas.points, self.canvas.directory, self.canvas.survey_id)
             self.chip_dialog.show()

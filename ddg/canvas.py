@@ -29,6 +29,7 @@ import numpy as np
 
 from PIL import Image
 from PyQt6 import QtCore, QtGui, QtWidgets
+from pyqtgraph.exporters import ImageExporter
 
 
 class Canvas(QtWidgets.QGraphicsScene):
@@ -66,6 +67,9 @@ class Canvas(QtWidgets.QGraphicsScene):
         self.show_grid = True
 
         self.selected_pen = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.red, QtCore.Qt.BrushStyle.SolidPattern), 1)
+
+        self.current_image_chart = None
+        self.all_image_chart = None
 
     def add_class(self, class_name):
         if class_name not in self.classes:
@@ -256,6 +260,12 @@ class Canvas(QtWidgets.QGraphicsScene):
             self.render(painter)
             image.save(file_name)
             painter.end()
+
+    def export_chart(self, file_name):
+        current_image_chart_file_name = file_name
+        all_image_chart_file_name = os.path.join(os.path.dirname(current_image_chart_file_name), 'all_images_chart.png')
+        self.export_chart_to_image(self.current_image_chart, current_image_chart_file_name)
+        self.export_chart_to_image(self.all_image_chart, all_image_chart_file_name)
 
     def generate_lookup_table(self, brightness, contrast):
         LUT = [i for i in range(0, 256)]
@@ -713,3 +723,11 @@ class Canvas(QtWidgets.QGraphicsScene):
 
     def update_survey_id(self, text):
         self.survey_id = text
+
+    def set_chart(self, current_image_chart, all_image_chart):
+        self.current_image_chart = current_image_chart
+        self.all_image_chart = all_image_chart
+
+    def export_chart_to_image(self, chart, image_file_name):
+        exporter = ImageExporter(chart.plotItem)
+        exporter.export(image_file_name)
