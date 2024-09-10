@@ -109,6 +109,7 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
             self.canvas.add_class(class_name)
             self.display_classes()
             self.display_count_tree()
+            self.canvas.update_point_count.emit(self.canvas.current_image_name, class_name, 0)
 
     def display_grid(self, display):
         self.canvas.toggle_grid(display=display)
@@ -209,6 +210,12 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
             file_name = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Export Image With Points'), os.path.join(self.canvas.directory, 'overlay.png'), 'PNG (*.png);;JPG (*.jpg)')
             if file_name[0] != '':
                 self.canvas.export_overlay(file_name[0])
+        elif self.radioButtonChart.isChecked():
+            if self.canvas.current_image_name is not None:
+                chart_png = os.path.splitext(self.canvas.current_image_name)[0] + '_chart.png'
+                file_name = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Export Chart'), os.path.join(self.canvas.directory, chart_png), 'PNG (*.png);;JPG (*.jpg)')
+                if file_name[0] != '':
+                    self.canvas.export_chart(file_name[0])
         else:
             self.chip_dialog = ChipDialog(self.canvas.classes, self.canvas.points, self.canvas.directory, self.canvas.survey_id)
             self.chip_dialog.show()
@@ -285,6 +292,7 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
                 self.canvas.remove_class(class_name)
                 self.display_classes()
                 self.display_count_tree()
+                self.canvas.update_point_count.emit(self.canvas.current_image_name, class_name, 0)
 
     def select_model_item(self, model_index):
         item = self.model.itemFromIndex(model_index)
@@ -341,7 +349,8 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
         if len(items) == 0:
             self.display_count_tree()
         else:
-            items[0].child(self.canvas.classes.index(class_name), 1).setText(str(class_count))
+            if class_name in self.canvas.classes:
+                items[0].child(self.canvas.classes.index(class_name), 1).setText(str(class_count))
 
     def update_ui_settings(self):
         ui = self.canvas.ui

@@ -29,7 +29,7 @@
     <message>
       <location filename="../ddg/about_dialog.py" line="77" />
       <source>Hungarian</source>
-      <translation type="unfinished" />
+      <translation>Hongrois</translation>
     </message>
     <message>
       <location filename="../ddg/about_dialog.py" line="81" />
@@ -80,89 +80,89 @@
   <context>
     <name>Canvas</name>
     <message>
-      <location filename="../ddg/canvas.py" line="139" />
+      <location filename="../ddg/canvas.py" line="143" />
       <source>Unsaved Changes</source>
       <translation>Modifications non enregistrées</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="140" />
+      <location filename="../ddg/canvas.py" line="144" />
       <source>Point or field data have been modified.</source>
       <translation>Les données de point ou de champ ont été modifiées.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="141" />
+      <location filename="../ddg/canvas.py" line="145" />
       <source>Do you want to save your changes?</source>
       <translation>Voulez-vous enregistrer vos modifications ?</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="210" />
+      <location filename="../ddg/canvas.py" line="214" />
       <source>survey id,image</source>
       <translation>id_etude,image</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="242" />
+      <location filename="../ddg/canvas.py" line="246" />
       <source>survey id,image,class,x,y</source>
       <translation>id_etude,image,categorie,x,y</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="345" />
-      <location filename="../ddg/canvas.py" line="327" />
+      <location filename="../ddg/canvas.py" line="355" />
+      <location filename="../ddg/canvas.py" line="337" />
       <source>Warning</source>
       <translation>Attention</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="327" />
+      <location filename="../ddg/canvas.py" line="337" />
       <source>Working directory already set. Load canceled.</source>
       <translation>Répertoire de travail déjà défini. Chargement annulé.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="337" />
+      <location filename="../ddg/canvas.py" line="347" />
       <source>Mix of files and directories detected. Load canceled.</source>
       <translation>Mélange de fichiers et dossiers détectés. Chargement annulé.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="340" />
+      <location filename="../ddg/canvas.py" line="350" />
       <source>Files from multiple directories detected. Load canceled.</source>
       <translation>Fichiers de sources multiples détectés. Chargement annulé.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="343" />
+      <location filename="../ddg/canvas.py" line="353" />
       <source>Image originated outside current working directory. Load canceled.</source>
       <translation>Images provenant de l'extérieur du dossier de travail. Chargement annulé.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="417" />
+      <location filename="../ddg/canvas.py" line="427" />
       <source>File Not Found</source>
       <translation>Fichier introuvable</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="417" />
+      <location filename="../ddg/canvas.py" line="427" />
       <source>is not in the same folder as the point file.</source>
       <translation>n'est pas dans le même dossier que le fichier de points.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="597" />
+      <location filename="../ddg/canvas.py" line="606" />
       <source>Save Points</source>
       <translation>Enregistrer les points</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="604" />
-      <location filename="../ddg/canvas.py" line="600" />
+      <location filename="../ddg/canvas.py" line="613" />
+      <location filename="../ddg/canvas.py" line="609" />
       <source>ERROR</source>
       <translation>ERREUR</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="600" />
+      <location filename="../ddg/canvas.py" line="609" />
       <source>You are attempting to save the pnt file outside of the working directory. Operation canceled. POINT DATA NOT SAVED.</source>
       <translation>Vous essayez d'enregistrer le fichier pnt en dehors du dossier de travail. Opération annulée. DONNÉES DE POINT NON ENREGISTRÉES.</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="605" />
+      <location filename="../ddg/canvas.py" line="614" />
       <source>Save Failed!</source>
       <translation>Enregistrement échoué !</translation>
     </message>
     <message>
-      <location filename="../ddg/canvas.py" line="606" />
+      <location filename="../ddg/canvas.py" line="615" />
       <source>It appears you cannot save your pnt file in the working directory, possibly due to permissions.
 
 Either change the permissions on the folder or click the SAVE button and select another location outside of the working directory. Remember to copy of the pnt file back into the current working directory.</source>
@@ -174,44 +174,49 @@ Modifiez les autorisations sur le dossier ou cliquez sur le bouton ENREGISTRER e
   <context>
     <name>CentralWidget</name>
     <message>
-      <location filename="../ddg/central_widget.py" line="125" />
+      <location filename="../ddg/central_widget.py" line="130" />
       <source>Saving...</source>
       <translation>Enregistrement...</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="140" />
+      <location filename="../ddg/central_widget.py" line="145" />
       <source>Warning</source>
       <translation>Attention</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="140" />
+      <location filename="../ddg/central_widget.py" line="145" />
       <source>Field name already exists</source>
       <translation>Le nom du champ existe déjà</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="149" />
+      <location filename="../ddg/central_widget.py" line="154" />
       <source>Save</source>
       <translation>Enregistrer</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="152" />
+      <location filename="../ddg/central_widget.py" line="157" />
       <source>Add Custom Field</source>
       <translation>Ajouter un champ personnalisé</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="167" />
+      <location filename="../ddg/central_widget.py" line="172" />
       <source>Delete</source>
       <translation>Supprimer</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="170" />
+      <location filename="../ddg/central_widget.py" line="175" />
       <source>Delete Custom Field</source>
       <translation>Supprimer le champ personnalisé</translation>
     </message>
     <message>
-      <location filename="../ddg/central_widget.py" line="234" />
+      <location filename="../ddg/central_widget.py" line="239" />
       <source>Select image folder</source>
       <translation>Sélectionner le répertoire de travail</translation>
+    </message>
+    <message>
+      <location filename="../ddg/central_widget.py" line="277" />
+      <source>All Images</source>
+      <translation>Toutes les images</translation>
     </message>
     <message>
       <location filename="../ddg/central_widget.ui" line="0" />
@@ -272,6 +277,11 @@ Modifiez les autorisations sur le dossier ou cliquez sur le bouton ENREGISTRER e
       <location filename="../ddg/central_widget.ui" line="0" />
       <source>Add custom field.</source>
       <translation>Ajouter un champ personnalisé.</translation>
+    </message>
+    <message>
+      <location filename="../ddg/central_widget.ui" line="0" />
+      <source>Chart</source>
+      <translation>Graphique</translation>
     </message>
   </context>
   <context>
@@ -403,7 +413,7 @@ Modifiez les autorisations sur le dossier ou cliquez sur le bouton ENREGISTRER e
     <message>
       <location filename="../ddg/main_window.py" line="55" />
       <source>Hungarian</source>
-      <translation type="unfinished" />
+      <translation>Hongrois</translation>
     </message>
     <message>
       <location filename="../ddg/main_window.py" line="56" />
@@ -444,55 +454,60 @@ Modifiez les autorisations sur le dossier ou cliquez sur le bouton ENREGISTRER e
       <translation>Nom de la catégorie</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="201" />
+      <location filename="../ddg/point_widget.py" line="202" />
       <source>Export Count Summary</source>
       <translation>Exporter le résumé du comptage</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="205" />
+      <location filename="../ddg/point_widget.py" line="206" />
       <source>Export Points</source>
       <translation>Exporter les points</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="209" />
+      <location filename="../ddg/point_widget.py" line="210" />
       <source>Export Image With Points</source>
       <translation>Exporter l'image avec les points</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="228" />
-      <location filename="../ddg/point_widget.py" line="222" />
+      <location filename="../ddg/point_widget.py" line="216" />
+      <source>Export Chart</source>
+      <translation>Exporter le graphique</translation>
+    </message>
+    <message>
+      <location filename="../ddg/point_widget.py" line="235" />
+      <location filename="../ddg/point_widget.py" line="229" />
       <source>Select Points File</source>
       <translation>Sélectionner un fichier de points</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="278" />
-      <location filename="../ddg/point_widget.py" line="251" />
+      <location filename="../ddg/point_widget.py" line="285" />
+      <location filename="../ddg/point_widget.py" line="258" />
       <source>Warning</source>
       <translation>Attention</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="252" />
+      <location filename="../ddg/point_widget.py" line="259" />
       <source>You are about to clear all data</source>
       <translation>Vous allez supprimer toutes les données</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="280" />
-      <location filename="../ddg/point_widget.py" line="253" />
+      <location filename="../ddg/point_widget.py" line="287" />
+      <location filename="../ddg/point_widget.py" line="260" />
       <source>Do you want to continue?</source>
       <translation>Voulez-vous continuer ?</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="266" />
+      <location filename="../ddg/point_widget.py" line="273" />
       <source>Image</source>
       <translation>Image</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="267" />
+      <location filename="../ddg/point_widget.py" line="274" />
       <source>Count</source>
       <translation>Comptage</translation>
     </message>
     <message>
-      <location filename="../ddg/point_widget.py" line="279" />
+      <location filename="../ddg/point_widget.py" line="286" />
       <source>You are about to remove class</source>
       <translation>Vous allez supprimer la catégorie</translation>
     </message>
@@ -646,6 +661,11 @@ Modifiez les autorisations sur le dossier ou cliquez sur le bouton ENREGISTRER e
       <location filename="../ddg/point_widget.ui" line="0" />
       <source>Overlay</source>
       <translation>Image et points</translation>
+    </message>
+    <message>
+      <location filename="../ddg/point_widget.ui" line="0" />
+      <source>Chart</source>
+      <translation>Graphique</translation>
     </message>
     <message>
       <location filename="../ddg/point_widget.ui" line="0" />

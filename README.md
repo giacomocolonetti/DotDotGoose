@@ -13,6 +13,7 @@ DotDotGoose is being developed on Ubuntu 22.04 with the following libraries:
 * PyQt6 (6.7.1)
 * Pillow (10.3.0)
 * Numpy (1.26.4)
+* PyQTGraph (0.13.7)
 
 ## Installation
 ```bash
