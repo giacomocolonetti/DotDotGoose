@@ -7,17 +7,19 @@ from torch.utils.data import Dataset
 from ml_experiments.patches import extract_patch, load_image_array
 
 
-def compute_mean_std(records, image_dir, patch_size):
+def compute_mean_std(records, patch_size):
     """Per-channel mean/std over all patches in `records`, used to normalize instead of
-    ImageNet stats (not a natural-scene domain)."""
-    cache_name, cache_array = None, None
+    ImageNet stats (not a natural-scene domain). Each record carries its own image_dir, so
+    this works across pooled records from different source folders."""
+    cache_key, cache_array = None, None
     pixel_sum = np.zeros(3, dtype=np.float64)
     pixel_sq_sum = np.zeros(3, dtype=np.float64)
     count = 0
     for r in records:
-        if cache_name != r.image_name:
-            cache_array = load_image_array(image_dir, r.image_name)
-            cache_name = r.image_name
+        key = (r.image_dir, r.image_name)
+        if cache_key != key:
+            cache_array = load_image_array(r.image_dir, r.image_name)
+            cache_key = key
         chip = extract_patch(cache_array, r.x, r.y, patch_size).astype(np.float64)
         pixel_sum += chip.sum(axis=(0, 1))
         pixel_sq_sum += (chip ** 2).sum(axis=(0, 1))
@@ -28,7 +30,7 @@ def compute_mean_std(records, image_dir, patch_size):
 
 
 class PatchDataset(Dataset):
-    def __init__(self, records, image_dir, patch_size, augment, mean, std, rng_seed=0, jitter_px=0):
+    def __init__(self, records, patch_size, augment, mean, std, rng_seed=0, jitter_px=0):
         """jitter_px: max +/- pixel offset applied to the crop center during training.
         A sliding-window detector at inference time almost never lands exactly on an
         object's true center (it samples a fixed grid), so a classifier trained only on
@@ -37,23 +39,23 @@ class PatchDataset(Dataset):
         "object somewhere in this patch" instead, matching the offsets a grid search will
         actually present."""
         self.records = records
-        self.image_dir = image_dir
         self.patch_size = patch_size
         self.augment = augment
         self.mean = mean
         self.std = std
         self.jitter_px = jitter_px
         self.rng = np.random.default_rng(rng_seed)
-        self._cache_name = None
+        self._cache_key = None
         self._cache_array = None
 
     def __len__(self):
         return len(self.records)
 
-    def _get_image(self, image_name):
-        if self._cache_name != image_name:
-            self._cache_array = load_image_array(self.image_dir, image_name)
-            self._cache_name = image_name
+    def _get_image(self, image_dir, image_name):
+        key = (image_dir, image_name)
+        if self._cache_key != key:
+            self._cache_array = load_image_array(image_dir, image_name)
+            self._cache_key = key
         return self._cache_array
 
     def _apply_augmentation(self, chip):
@@ -71,7 +73,7 @@ class PatchDataset(Dataset):
 
     def __getitem__(self, idx):
         record = self.records[idx]
-        img = self._get_image(record.image_name)
+        img = self._get_image(record.image_dir, record.image_name)
         x, y = record.x, record.y
         if self.augment and self.jitter_px > 0:
             x = x + self.rng.uniform(-self.jitter_px, self.jitter_px)

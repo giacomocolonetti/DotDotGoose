@@ -10,7 +10,8 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image
 
-from ml_experiments.pnt_io import all_points_for_image, points_for_image
+from ml_experiments.pnt_io import (all_points_for_image, all_points_with_class_for_image,
+                                    load_pnt, points_for_image)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000
 
 @dataclass
 class PatchRecord:
+    image_dir: str
     image_name: str
     x: float
     y: float
@@ -86,23 +88,47 @@ def sample_negative_centers(img_shape, exclude_points_xy, n, patch_size, exclusi
 
 def extract_dataset(pnt_data, image_dir, image_name, class_name, patch_size, neg_ratio,
                      rng_seed, exclusion_radius=None):
-    """Build PatchRecord list (metadata only, no pixel data materialized) for one
-    image+class: all annotated points as positives, plus sampled negatives."""
+    """Build PatchRecord list (metadata only, no pixel data materialized) for one image:
+    all annotated points as positives, plus sampled negatives. class_name=None pools every
+    annotated class on this image as a single generic "bird" positive set -- this is what
+    makes a detector species-agnostic instead of tied to one species' checkpoint."""
     if exclusion_radius is None:
         exclusion_radius = patch_size // 2
 
-    positives_xy = points_for_image(pnt_data, image_name, class_name)
+    if class_name is None:
+        # Pool every class on this image as generic "bird" positives, but keep each
+        # point's own species tag around (for pooled_classes() reporting) rather than
+        # collapsing it to None.
+        positives = all_points_with_class_for_image(pnt_data, image_name)
+    else:
+        positives = [(x, y, class_name) for x, y in points_for_image(pnt_data, image_name, class_name)]
     all_points_xy = all_points_for_image(pnt_data, image_name)
 
     img = load_image_array(image_dir, image_name)
     rng = np.random.default_rng(rng_seed)
-    n_negatives = len(positives_xy) * neg_ratio
+    n_negatives = len(positives) * neg_ratio
     negative_centers = sample_negative_centers(img.shape, all_points_xy, n_negatives,
                                                 patch_size, exclusion_radius, rng)
 
     records = []
-    for x, y in positives_xy:
-        records.append(PatchRecord(image_name=image_name, x=x, y=y, label=1, class_name=class_name))
+    for x, y, point_class in positives:
+        records.append(PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y,
+                                    label=1, class_name=point_class))
     for x, y in negative_centers:
-        records.append(PatchRecord(image_name=image_name, x=x, y=y, label=0, class_name=None))
+        records.append(PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y,
+                                    label=0, class_name=None))
     return records
+
+
+def extract_pooled_dataset(sources, patch_size, neg_ratio, rng_seed, exclusion_radius=None):
+    """Like extract_dataset, but pooled across multiple (possibly cross-folder) sources,
+    each contributing every annotated class on its image as generic "bird" positives.
+    `sources` is a list of dicts: {'pnt': path, 'image_dir': path, 'image': image_name}.
+    Used to build a single species-agnostic, size-bucketed detector from several photos."""
+    all_records = []
+    for i, source in enumerate(sources):
+        pnt_data = load_pnt(source['pnt'])
+        records = extract_dataset(pnt_data, source['image_dir'], source['image'], None,
+                                   patch_size, neg_ratio, rng_seed + i, exclusion_radius)
+        all_records.extend(records)
+    return all_records

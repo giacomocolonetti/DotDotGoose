@@ -8,16 +8,22 @@ points' own x-coordinates (not "80% of image width" -- points may occupy only a 
 band of the frame). Patches whose window straddles the boundary are dropped from both
 sides so train/val never share overlapping pixels. Still optimistic vs Pair A since both
 sides share the same photo's lighting/sensor-noise/background statistics.
+
+multi_source_split (pooled, cross-folder, size-bucketed): trains a single
+species-agnostic "bird" detector by pooling every annotated class across several
+photos/folders as generic positives (class_name=None everywhere -- see patches.py), and
+evaluates on a wholly separate held-out photo. This is the direct generalization of Pair A
+to more than one training photo/species.
 """
 import numpy as np
 
-from ml_experiments.patches import (PatchRecord, all_points_for_image, load_image_array,
+from ml_experiments.patches import (PatchRecord, all_points_for_image, extract_dataset,
+                                     extract_pooled_dataset, load_image_array,
                                      points_for_image, sample_negative_centers)
 
 
 def pair_a_split(pnt_data, image_dir, train_image, eval_image, class_name, patch_size,
                   neg_ratio, rng_seed, exclusion_radius=None):
-    from ml_experiments.patches import extract_dataset
     train_records = extract_dataset(pnt_data, image_dir, train_image, class_name,
                                      patch_size, neg_ratio, rng_seed, exclusion_radius)
     eval_records = extract_dataset(pnt_data, image_dir, eval_image, class_name,
@@ -27,11 +33,17 @@ def pair_a_split(pnt_data, image_dir, train_image, eval_image, class_name, patch
 
 def pair_b_split(pnt_data, image_dir, image_name, class_name, patch_size, neg_ratio,
                   rng_seed, train_frac=0.8, exclusion_radius=None):
+    """class_name=None pools every annotated class on this image as generic "bird"
+    positives (used for the small-bucket detector, which currently has only one source
+    image, so a same-image split is the only option available)."""
     if exclusion_radius is None:
         exclusion_radius = patch_size // 2
     half = patch_size // 2
 
-    positives_xy = points_for_image(pnt_data, image_name, class_name)
+    if class_name is None:
+        positives_xy = all_points_for_image(pnt_data, image_name)
+    else:
+        positives_xy = points_for_image(pnt_data, image_name, class_name)
     all_points_xy = all_points_for_image(pnt_data, image_name)
     xs = np.array([p[0] for p in positives_xy], dtype=np.float64)
     boundary = float(np.percentile(xs, train_frac * 100))
@@ -55,13 +67,24 @@ def pair_b_split(pnt_data, image_dir, image_name, class_name, patch_size, neg_ra
                                        exclusion_radius, rng, x_range=val_x_range)
 
     train_records = (
-        [PatchRecord(image_name=image_name, x=x, y=y, label=1, class_name=class_name) for x, y in train_pos] +
-        [PatchRecord(image_name=image_name, x=x, y=y, label=0, class_name=None) for x, y in train_neg]
+        [PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y, label=1, class_name=class_name) for x, y in train_pos] +
+        [PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y, label=0, class_name=None) for x, y in train_neg]
     )
     val_records = (
-        [PatchRecord(image_name=image_name, x=x, y=y, label=1, class_name=class_name) for x, y in val_pos] +
-        [PatchRecord(image_name=image_name, x=x, y=y, label=0, class_name=None) for x, y in val_neg]
+        [PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y, label=1, class_name=class_name) for x, y in val_pos] +
+        [PatchRecord(image_dir=image_dir, image_name=image_name, x=x, y=y, label=0, class_name=None) for x, y in val_neg]
     )
     meta = {'boundary': boundary, 'train_points': len(train_pos), 'val_points': len(val_pos),
             'dropped_points': dropped}
     return train_records, val_records, meta
+
+
+def multi_source_split(train_sources, val_sources, patch_size, neg_ratio, rng_seed,
+                        exclusion_radius=None):
+    """Pool positives (every class, per source) across several train photos/folders,
+    evaluate on wholly separate val photo(s). Each source: {'pnt', 'image_dir', 'image'}."""
+    train_records = extract_pooled_dataset(train_sources, patch_size, neg_ratio, rng_seed,
+                                            exclusion_radius)
+    val_records = extract_pooled_dataset(val_sources, patch_size, neg_ratio, rng_seed + len(train_sources),
+                                          exclusion_radius)
+    return train_records, val_records

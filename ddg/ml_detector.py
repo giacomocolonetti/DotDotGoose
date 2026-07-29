@@ -21,19 +21,25 @@
 # along with with this software.  If not, see <http://www.gnu.org/licenses/>.
 #
 # --------------------------------------------------------------------------
-"""Experimental ML detector: wraps a patch classifier trained by ml_experiments/train.py
-(see ml_experiments/runs/report.md for what it can/can't do yet) behind the same
-PointDetector interface as ClassicCVDetector, so it's a drop-in alternative.
+"""Experimental ML detector: wraps a heatmap-regression model trained by
+ml_experiments/train_heatmap.py (see ml_experiments/runs/report.md and the size-bucket
+follow-up notes for what it can/can't do) behind the same PointDetector interface as
+ClassicCVDetector.
 
-Unlike ClassicCVDetector, each trained checkpoint is bound to one species (the class it
-was trained on), so detect() needs `class_name` to pick the right one -- this is why
-PointDetector.detect() has an (optional, unused-by-Classical) class_name parameter.
+This predicts a per-pixel "birdness" map and finds local peaks in it, rather than
+classifying fixed-size windows on a coarse grid (the earlier classifier approach in
+ml_experiments/model.py) -- peaks can land anywhere at the map's native resolution, which
+is what actually fixed the sliding-window/NMS localization ceiling diagnosed earlier.
 
-This module intentionally imports torch and ml_experiments lazily (inside methods, not at
-module load time) so the rest of the app never needs torch installed unless a caller
-actually picks the ML detector. Import this module itself is cheap; constructing
-MLPointDetector and scanning for available checkpoints is cheap; only detect() pulls in
-torch/ml_experiments, and only for a class that has a matching trained checkpoint.
+Models are species-agnostic within a size "bucket" (small/large -- see
+ml_experiments/bucket_configs/): each trained run records which species contributed to its
+training pool (`pooled_classes` in config.json), and detect() routes a requested
+class_name to whichever bucket's model was trained on it, rather than requiring an exact
+per-species checkpoint. Unmatched classes raise ModelUnavailableError with the available
+list, same contract as before.
+
+torch and ml_experiments are imported lazily (inside methods, not at module load time) so
+the rest of the app never needs them unless a caller actually picks the ML detector.
 """
 import json
 import os
@@ -57,7 +63,7 @@ class MLPointDetector(PointDetector):
     def __init__(self, runs_dir=DEFAULT_RUNS_DIR):
         self.runs_dir = runs_dir
         self._registry = None  # class_name -> run_dir, built lazily, no torch import needed
-        self._loaded = {}      # run_dir -> (model, mean, std, patch_size)
+        self._loaded = {}      # run_dir -> (model, mean, std, output_stride)
 
     def available_classes(self):
         self._build_registry()
@@ -70,10 +76,13 @@ class MLPointDetector(PointDetector):
         if os.path.isdir(self.runs_dir):
             for entry in sorted(os.listdir(self.runs_dir)):
                 config_path = os.path.join(self.runs_dir, entry, 'config.json')
-                if os.path.isfile(config_path):
-                    with open(config_path) as f:
-                        config = json.load(f)
-                    class_name = config['args']['class_name']
+                if not os.path.isfile(config_path):
+                    continue
+                with open(config_path) as f:
+                    config = json.load(f)
+                if 'output_stride' not in config:
+                    continue  # skip older/non-heatmap runs (e.g. superseded classifier checkpoints)
+                for class_name in config.get('pooled_classes', []):
                     registry[class_name] = os.path.join(self.runs_dir, entry)
         self._registry = registry
 
@@ -82,7 +91,7 @@ class MLPointDetector(PointDetector):
             return self._loaded[run_dir]
         try:
             import torch
-            from ml_experiments.model import SmallPatchCNN
+            from ml_experiments.heatmap_model import HeatmapCNN
         except ImportError as e:
             raise ModelUnavailableError(
                 'ML detector requires torch and the ml_experiments package '
@@ -90,32 +99,31 @@ class MLPointDetector(PointDetector):
 
         with open(os.path.join(run_dir, 'config.json')) as f:
             config = json.load(f)
-        model = SmallPatchCNN()
+        model = HeatmapCNN(num_stages=config['args']['num_stages'])
         model.load_state_dict(torch.load(os.path.join(run_dir, 'model.pt'), map_location='cpu'))
         model.eval()
         mean = np.array(config['mean'], dtype=np.float32)
         std = np.array(config['std'], dtype=np.float32)
-        patch_size = config['args']['patch_size']
-        self._loaded[run_dir] = (model, mean, std, patch_size)
+        output_stride = config['output_stride']
+        self._loaded[run_dir] = (model, mean, std, output_stride)
         return self._loaded[run_dir]
 
     def detect(self, image_array, region=None, sensitivity=50, polarity='bright',
                existing_points=None, dedup_radius=None, class_name=None):
-        # polarity is unused: the ML classifier learns its own appearance model rather than
-        # a bright/dark heuristic.
+        # polarity is unused: the heatmap model learns its own appearance model rather
+        # than a bright/dark heuristic.
         self._build_registry()
         if class_name not in self._registry:
             available = ', '.join(self.available_classes()) or '(none trained)'
             raise ModelUnavailableError(
                 "No trained ML model for class '{}'. Available: {}".format(class_name, available))
-        model, mean, std, patch_size = self._load(self._registry[class_name])
+        model, mean, std, output_stride = self._load(self._registry[class_name])
 
         existing_points = existing_points or []
-        # Never dedup less aggressively than the model's own spatial resolution (half the
-        # patch size): the UI's configurable point radius defaults to 25px, well below the
-        # ~48px granularity a stride/NMS sliding-window pipeline actually resolves at, which
-        # would otherwise flood the result with near-duplicate detections of the same bird.
-        dedup_radius = max(dedup_radius or 0, patch_size // 2)
+        min_distance_native = max(8, output_stride * 2)
+        # Never dedup less aggressively than the model's own spatial resolution, same
+        # reasoning as the earlier classifier detector's dedup_radius floor.
+        dedup_radius = max(dedup_radius or 0, min_distance_native)
 
         offset_x, offset_y = 0, 0
         array = image_array
@@ -127,60 +135,69 @@ class MLPointDetector(PointDetector):
             array = image_array[y0:y1, x0:x1]
             offset_x, offset_y = x0, y0
 
-        if array.size == 0 or array.shape[0] < patch_size or array.shape[1] < patch_size:
+        if array.size == 0 or array.shape[0] < output_stride or array.shape[1] < output_stride:
             return DetectionResult([], meta={'count': 0})
 
-        # sensitivity (0-100, shared UI control with ClassicCVDetector) maps to a confidence
-        # threshold: higher sensitivity -> lower threshold -> more detections.
+        # sensitivity (0-100, shared UI control with ClassicCVDetector) maps to a peak
+        # probability threshold: higher sensitivity -> lower threshold -> more detections.
         sensitivity = max(0, min(100, int(sensitivity)))
-        score_threshold = max(0.01, 1.0 - sensitivity / 100.0)
-        stride = max(8, patch_size // 3)
+        threshold = max(0.01, 1.0 - sensitivity / 100.0)
+        min_distance_target = min_distance_native / output_stride
 
-        detections = self._sliding_window_detect(model, array, mean, std, patch_size, stride, score_threshold)
-        kept = self._nms(detections, dedup_radius)
-        candidates_yx = np.array([[y, x] for x, y, _ in kept], dtype=np.float64) if kept else np.zeros((0, 2))
+        heatmap = self._predict_heatmap(model, array, mean, std, output_stride)
+        peaks = self._find_peaks(heatmap, threshold, min_distance_target)
+        candidates_yx = (np.array([[y * output_stride, x * output_stride] for y, x, _ in peaks], dtype=np.float64)
+                         if peaks else np.zeros((0, 2)))
         candidates_yx = dedupe_points(candidates_yx, existing_points, dedup_radius)
 
         points = [QtCore.QPointF(x + offset_x, y + offset_y) for y, x in candidates_yx]
         return DetectionResult(points, meta={'count': len(points)})
 
-    def _sliding_window_detect(self, model, img, mean, std, patch_size, stride, score_threshold, batch_size=256):
+    def _predict_heatmap(self, model, img, mean, std, output_stride, tile=1536, overlap=64):
+        """Whole-image inference via large overlapping tiles (fully-convolutional model,
+        so any input size works), stitched with a max-blend so overlap seams don't create
+        duplicate/split peaks. Needed for the huge stitched-panorama images in this app's
+        real datasets, which won't fit through the model in a single forward pass."""
         import torch
-        from ml_experiments.patches import extract_patch
 
         h, w = img.shape[0], img.shape[1]
-        half = patch_size // 2
-        xs = list(range(half, w - half, stride)) or [w // 2]
-        ys = list(range(half, h - half, stride)) or [h // 2]
-        centers = [(x, y) for y in ys for x in xs]
+        out_h, out_w = h // output_stride, w // output_stride
+        heatmap = np.zeros((out_h, out_w), dtype=np.float32)
+        step = tile - overlap
 
-        detections = []
         with torch.no_grad():
-            for i in range(0, len(centers), batch_size):
-                batch_centers = centers[i:i + batch_size]
-                chips = np.stack([extract_patch(img, cx, cy, patch_size).astype(np.float32)
-                                   for cx, cy in batch_centers])
-                chips = (chips - mean) / std
-                chips = np.ascontiguousarray(np.transpose(chips, (0, 3, 1, 2)))
-                tensor = torch.from_numpy(chips)
-                probs = torch.softmax(model(tensor), dim=1)[:, 1].numpy()
-                for (cx, cy), score in zip(batch_centers, probs):
-                    if score >= score_threshold:
-                        detections.append((float(cx), float(cy), float(score)))
-        return detections
+            for y0 in range(0, h, step):
+                for x0 in range(0, w, step):
+                    y1, x1 = min(y0 + tile, h), min(x0 + tile, w)
+                    if y1 - y0 < output_stride or x1 - x0 < output_stride:
+                        continue
+                    chunk = img[y0:y1, x0:x1].astype(np.float32)
+                    chunk = (chunk - mean) / std
+                    chunk = np.ascontiguousarray(np.transpose(chunk, (2, 0, 1)))
+                    tensor = torch.from_numpy(chunk).unsqueeze(0)
+                    probs = torch.sigmoid(model(tensor))[0, 0].numpy()
+                    oy0, ox0 = y0 // output_stride, x0 // output_stride
+                    oh, ow = probs.shape
+                    heatmap[oy0:oy0 + oh, ox0:ox0 + ow] = np.maximum(heatmap[oy0:oy0 + oh, ox0:ox0 + ow], probs)
+        return heatmap
 
-    def _nms(self, detections, dedup_radius):
-        """Greedy NMS: keep the highest-scoring detection, drop others within dedup_radius."""
-        if not detections:
+    def _find_peaks(self, heatmap, threshold, min_distance):
+        """Greedy NMS over candidate pixels above threshold, at the heatmap's native
+        resolution -- not constrained to a stride-spaced grid like the classifier's
+        sliding window."""
+        ys, xs = np.nonzero(heatmap >= threshold)
+        if len(ys) == 0:
             return []
-        ordered = sorted(detections, key=lambda d: -d[2])
-        kept, kept_xy = [], []
-        for x, y, score in ordered:
-            if kept_xy:
-                arr = np.array(kept_xy)
-                dist2 = np.sum((arr - np.array([x, y])) ** 2, axis=1)
-                if dist2.min() <= dedup_radius ** 2:
+        scores = heatmap[ys, xs]
+        order = np.argsort(-scores)
+        kept, kept_yx = [], []
+        for idx in order:
+            y, x, s = int(ys[idx]), int(xs[idx]), float(scores[idx])
+            if kept_yx:
+                arr = np.array(kept_yx, dtype=np.float64)
+                dist2 = np.sum((arr - np.array([y, x])) ** 2, axis=1)
+                if dist2.min() < min_distance ** 2:
                     continue
-            kept.append((x, y, score))
-            kept_xy.append((x, y))
+            kept.append((y, x, s))
+            kept_yx.append((y, x))
         return kept

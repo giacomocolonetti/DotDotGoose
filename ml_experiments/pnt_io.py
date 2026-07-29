@@ -15,8 +15,15 @@ def points_for_image(pnt_data, image_name, class_name):
 
 def all_points_for_image(pnt_data, image_name):
     """All points regardless of class, for negative-patch exclusion."""
+    return [(x, y) for x, y, _ in all_points_with_class_for_image(pnt_data, image_name)]
+
+
+def all_points_with_class_for_image(pnt_data, image_name):
+    """All points regardless of class, each tagged with its own species -- used when
+    pooling classes as generic "bird" positives but still wanting to know afterward which
+    species actually contributed (see train.py's pooled_classes())."""
     classes = pnt_data['points'].get(image_name, {})
     points = []
-    for class_points in classes.values():
-        points.extend((p['x'], p['y']) for p in class_points)
+    for class_name, class_points in classes.items():
+        points.extend((p['x'], p['y'], class_name) for p in class_points)
     return points

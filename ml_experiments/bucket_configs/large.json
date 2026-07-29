@@ -1,0 +1,12 @@
+{
+  "bucket": "large",
+  "description": "Species with wide inter-point spacing (median NN distance >20px): Plegadis chihi (26-37px) and Coscoroba coscoroba (120-220px), pooled as one generic 'bird' detector across 3 training photos from 2 different sessions/camera setups (regular photo + stitched aerial panoramas). Held out: IMG_4148.jpeg (Plegadis chihi), the same held-out image used by the earlier species-specific Pair A experiment, for direct before/after comparison.",
+  "train_sources": [
+    {"pnt": "/Users/giacomo/Documents/Coscoroba/202607270736/S377018913.pnt", "image_dir": "/Users/giacomo/Documents/Coscoroba/202607270736", "image": "IMG_4147.jpeg"},
+    {"pnt": "/Users/giacomo/Documents/Coscoroba/202607251258/S376982883.pnt", "image_dir": "/Users/giacomo/Documents/Coscoroba/202607251258", "image": "048A0058-Pano.jpg"},
+    {"pnt": "/Users/giacomo/Documents/Coscoroba/202607260736/S377018913.pnt", "image_dir": "/Users/giacomo/Documents/Coscoroba/202607260736", "image": "048A0134-Pano.jpg"}
+  ],
+  "val_sources": [
+    {"pnt": "/Users/giacomo/Documents/Coscoroba/202607270736/S377018913.pnt", "image_dir": "/Users/giacomo/Documents/Coscoroba/202607270736", "image": "IMG_4148.jpeg"}
+  ]
+}
