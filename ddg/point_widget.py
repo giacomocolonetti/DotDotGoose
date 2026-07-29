@@ -118,7 +118,7 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
         if self.canvas.current_image_name is None or self.canvas.current_class_name is None:
             QtWidgets.QMessageBox.warning(self, self.tr('Auto-Detect'), self.tr('Select an image and a class first.'))
             return
-        has_selection = len(self.canvas.selection) > 0
+        has_selection = self.canvas.last_region is not None
         self.detect_dialog = DetectDialog(self.canvas, has_selection, self)
         self.detect_dialog.show()
 
