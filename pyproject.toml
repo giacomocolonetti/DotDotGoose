@@ -1,0 +1,11 @@
+[project]
+name = "dotdotgoose"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy==1.26.4",
+    "pillow==10.3.0",
+    "pyqt6==6.7.1",
+]

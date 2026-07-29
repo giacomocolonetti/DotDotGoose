@@ -8,3 +8,5 @@ doc/source/_build/
 .vscode/
 __pycache__/
 setup.cfg
+.DS_Store
+.python-version

@@ -30,6 +30,8 @@ import numpy as np
 from PIL import Image
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+from .detector import ClassicCVDetector
+
 
 class Canvas(QtWidgets.QGraphicsScene):
     image_loading = QtCore.pyqtSignal(bool, bool)  # Params (Large image, redraw)
@@ -40,6 +42,7 @@ class Canvas(QtWidgets.QGraphicsScene):
     update_point_count = QtCore.pyqtSignal(str, str, int)  # Params (image_name, class, count)
     metadata_imported = QtCore.pyqtSignal()
     saving = QtCore.pyqtSignal()
+    detection_finished = QtCore.pyqtSignal(int)  # Params (count)
 
     def __init__(self, parent=None):
         QtWidgets.QGraphicsScene.__init__(self, parent)
@@ -50,6 +53,7 @@ class Canvas(QtWidgets.QGraphicsScene):
         self.custom_fields = {'fields': [], 'data': {}}
         self.classes = []
         self.selection = []
+        self.last_region = None
         self.redo_queue = []
         self.undo_queue = []
         self.ui = {'grid': {'size': 200, 'color': [255, 255, 255]}, 'point': {'radius': 25, 'color': [255, 255, 0]}}
@@ -66,6 +70,7 @@ class Canvas(QtWidgets.QGraphicsScene):
         self.show_grid = True
 
         self.selected_pen = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.red, QtCore.Qt.BrushStyle.SolidPattern), 1)
+        self.detector = ClassicCVDetector()
 
     def add_class(self, class_name):
         if class_name not in self.classes:
@@ -361,6 +366,7 @@ class Canvas(QtWidgets.QGraphicsScene):
         if self.directory == os.path.split(file_name)[0]:
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             self.selection = []
+            self.last_region = None
             self.clear()
             self.current_image_name = os.path.split(file_name)[1]
             if self.current_image_name not in self.points:
@@ -523,6 +529,12 @@ class Canvas(QtWidgets.QGraphicsScene):
                 self.update_point_count.emit(self.current_image_name, event[1], len(self.points[self.current_image_name][event[1]]))
                 self.display_points()
                 self.undo_queue.append(event)
+            elif event[0] == 'add_batch':
+                for point in event[2]:
+                    self.points[self.current_image_name][event[1]].append(point)
+                self.update_point_count.emit(self.current_image_name, event[1], len(self.points[self.current_image_name][event[1]]))
+                self.display_points()
+                self.undo_queue.append(event)
 
     def redraw_image(self):
         if self.directory != '':
@@ -568,6 +580,7 @@ class Canvas(QtWidgets.QGraphicsScene):
         self.classes = []
         self.classes = []
         self.selection = []
+        self.last_region = None
         self.redo_queue = []
         self.undo_queue = []
         self.coordinates = {}
@@ -641,15 +654,45 @@ class Canvas(QtWidgets.QGraphicsScene):
 
     def select_points(self, rect):
         self.selection = []
+        self.last_region = rect
         self.display_points()
         current = self.points[self.current_image_name]
-        display_radius = self.ui['point']['radius']
         for class_name in current:
             for point in current[class_name]:
                 if rect.contains(point):
-                    offset = ((display_radius + 6) // 2)
-                    self.addEllipse(QtCore.QRectF(point.x() - offset, point.y() - offset, display_radius + 6, display_radius + 6), self.selected_pen)
                     self.selection.append((class_name, point))
+        self._highlight_selection()
+
+    def _highlight_selection(self):
+        display_radius = self.ui['point']['radius']
+        offset = ((display_radius + 6) // 2)
+        for _, point in self.selection:
+            self.addEllipse(QtCore.QRectF(point.x() - offset, point.y() - offset, display_radius + 6, display_radius + 6), self.selected_pen)
+
+    def run_detection(self, region=None, sensitivity=50, polarity='bright'):
+        if self.current_image_name is None or self.current_class_name is None or self.image_cache['data'] is None:
+            return
+        existing = self.points[self.current_image_name].get(self.current_class_name, [])
+        result = self.detector.detect(self.image_cache['data'], region=region, sensitivity=sensitivity,
+                                       polarity=polarity, existing_points=existing,
+                                       dedup_radius=self.ui['point']['radius'])
+        self._commit_detected_points(result.points)
+
+    def _commit_detected_points(self, points):
+        if len(points) == 0:
+            self.detection_finished.emit(0)
+            return
+        class_name = self.current_class_name
+        if class_name not in self.points[self.current_image_name]:
+            self.points[self.current_image_name][class_name] = []
+        self.points[self.current_image_name][class_name].extend(points)
+        self.update_point_count.emit(self.current_image_name, class_name, len(self.points[self.current_image_name][class_name]))
+        self.undo_queue.append(('add_batch', class_name, list(points)))
+        self.dirty = True
+        self.selection = [(class_name, point) for point in points]
+        self.display_points()
+        self._highlight_selection()
+        self.detection_finished.emit(len(points))
 
     def set_current_class(self, class_index):
         if class_index is None or class_index >= len(self.classes):
@@ -709,6 +752,12 @@ class Canvas(QtWidgets.QGraphicsScene):
                     self.update_point_count.emit(self.current_image_name, event[1], len(self.points[self.current_image_name][event[1]]))
                     self.points[self.current_image_name][class_name].append(point)
                     self.update_point_count.emit(self.current_image_name, class_name, len(self.points[self.current_image_name][class_name]))
+                self.display_points()
+                self.redo_queue.append(event)
+            elif event[0] == 'add_batch':
+                for point in event[2]:
+                    self.points[self.current_image_name][event[1]].remove(point)
+                self.update_point_count.emit(self.current_image_name, event[1], len(self.points[self.current_image_name][event[1]]))
                 self.display_points()
                 self.redo_queue.append(event)
 

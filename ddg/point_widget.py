@@ -27,6 +27,7 @@ import sys
 from PyQt6 import QtCore, QtGui, QtWidgets, uic
 
 from .chip_dialog import ChipDialog
+from .detect_dialog import DetectDialog
 
 # from .ui_point_widget import Ui_Pointwidget as WIDGET
 if getattr(sys, 'frozen', False):
@@ -51,6 +52,7 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
         self.pushButtonLoadPoints.clicked.connect(self.load)
         self.pushButtonReset.clicked.connect(self.reset)
         self.pushButtonExport.clicked.connect(self.export)
+        self.pushButtonDetect.clicked.connect(self.detect_points)
 
         self.pushButtonExport.setIcon(QtGui.QIcon('icons:export.svg'))
         self.pushButtonReset.setIcon(QtGui.QIcon('icons:reset.svg'))
@@ -63,6 +65,8 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
         self.pushButtonLoadPoints.setStyleSheet('text-align: left;')
         self.pushButtonRemoveClass.setIcon(QtGui.QIcon('icons:delete.svg'))
         self.pushButtonAddClass.setIcon(QtGui.QIcon('icons:add.svg'))
+        self.pushButtonDetect.setIcon(QtGui.QIcon('icons:detect.svg'))
+        self.pushButtonDetect.setStyleSheet('text-align: left;')
 
         self.tableWidgetClasses.verticalHeader().setVisible(False)
         self.tableWidgetClasses.horizontalHeader().setMinimumSectionSize(1)
@@ -109,6 +113,14 @@ class PointWidget(QtWidgets.QWidget, WIDGET):
             self.canvas.add_class(class_name)
             self.display_classes()
             self.display_count_tree()
+
+    def detect_points(self):
+        if self.canvas.current_image_name is None or self.canvas.current_class_name is None:
+            QtWidgets.QMessageBox.warning(self, self.tr('Auto-Detect'), self.tr('Select an image and a class first.'))
+            return
+        has_selection = len(self.canvas.selection) > 0
+        self.detect_dialog = DetectDialog(self.canvas, has_selection, self)
+        self.detect_dialog.show()
 
     def display_grid(self, display):
         self.canvas.toggle_grid(display=display)
