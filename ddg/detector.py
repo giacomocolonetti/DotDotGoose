@@ -49,7 +49,7 @@ class PointDetector:
     isolation. A future ML-based detector implements the same signature."""
 
     def detect(self, image_array, region=None, sensitivity=50, polarity='bright',
-               existing_points=None, dedup_radius=None):
+               existing_points=None, dedup_radius=None, class_name=None):
         raise NotImplementedError
 
 
@@ -61,7 +61,10 @@ class ClassicCVDetector(PointDetector):
     STRIP_HEIGHT = 2000
 
     def detect(self, image_array, region=None, sensitivity=50, polarity='bright',
-               existing_points=None, dedup_radius=None):
+               existing_points=None, dedup_radius=None, class_name=None):
+        # class_name is unused here (this detector is class-agnostic); accepted only so
+        # callers can pass it uniformly across detector implementations, e.g. MLPointDetector
+        # needs it to pick a per-species checkpoint.
         existing_points = existing_points or []
         if dedup_radius is None:
             dedup_radius = 12.0

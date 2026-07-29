@@ -669,13 +669,15 @@ class Canvas(QtWidgets.QGraphicsScene):
         for _, point in self.selection:
             self.addEllipse(QtCore.QRectF(point.x() - offset, point.y() - offset, display_radius + 6, display_radius + 6), self.selected_pen)
 
-    def run_detection(self, region=None, sensitivity=50, polarity='bright'):
+    def run_detection(self, region=None, sensitivity=50, polarity='bright', detector=None):
         if self.current_image_name is None or self.current_class_name is None or self.image_cache['data'] is None:
             return
         existing = self.points[self.current_image_name].get(self.current_class_name, [])
-        result = self.detector.detect(self.image_cache['data'], region=region, sensitivity=sensitivity,
-                                       polarity=polarity, existing_points=existing,
-                                       dedup_radius=self.ui['point']['radius'])
+        active_detector = detector if detector is not None else self.detector
+        result = active_detector.detect(self.image_cache['data'], region=region, sensitivity=sensitivity,
+                                         polarity=polarity, existing_points=existing,
+                                         dedup_radius=self.ui['point']['radius'],
+                                         class_name=self.current_class_name)
         self._commit_detected_points(result.points)
 
     def _commit_detected_points(self, points):
