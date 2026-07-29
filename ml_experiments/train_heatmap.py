@@ -108,12 +108,22 @@ def main():
     parser.add_argument('--weight-decay', type=float, default=1e-4)
     parser.add_argument('--pos-weight', type=float, default=10.0)
     parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--device', choices=['auto', 'cpu', 'mps', 'cuda'], default='auto')
     parser.add_argument('--out-dir', required=True)
     args = parser.parse_args()
 
     set_seed(args.seed)
     os.makedirs(args.out_dir, exist_ok=True)
-    device = torch.device('cpu')
+    if args.device == 'auto':
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        elif torch.backends.mps.is_available():
+            device = torch.device('mps')
+        else:
+            device = torch.device('cpu')
+    else:
+        device = torch.device(args.device)
+    print(f'device: {device}')
     output_stride = 2 ** args.num_stages
 
     split_meta = {}
